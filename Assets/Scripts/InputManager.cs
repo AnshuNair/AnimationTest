@@ -18,6 +18,7 @@ public class InputManager : MonoBehaviour
     [HideInInspector] public float horizontalInput;
     [HideInInspector] public float rollInputTimer;
     [HideInInspector] public float sprintInputTimer;
+    [HideInInspector] public float spaceLetGoTimer;
     [HideInInspector] public bool sprintInput;
     [HideInInspector] public bool walkInput;
 
@@ -80,6 +81,14 @@ public class InputManager : MonoBehaviour
                 else
                 {
                     sprintInputTimer += Time.deltaTime;
+                    if (playerControls.PlayerMovement.Sprint.triggered)
+                    {
+                        playerManager.animationManager.PlayTargetAnimation("Running Jump", true);
+                        playerManager.playerLocomotion.isSprinting = false;
+                        sprintInputTimer = 0f;
+                        rollInputTimer = 0f;
+                        spaceLetGoTimer = 0f;
+                    }
                 }
             }
             else if (playerManager.animator.GetFloat("Vertical") < 0.4f)
@@ -87,19 +96,24 @@ public class InputManager : MonoBehaviour
         }
         else if (!sprintInput && !playerManager.isInteracting)
         {
-            if (rollInputTimer > 0 && rollInputTimer < 0.15f)
+            spaceLetGoTimer += Time.deltaTime;
+            if (spaceLetGoTimer >= 0.25f)
             {
-                playerManager.playerLocomotion.isSprinting = false;
-                playerManager.playerLocomotion.isRolling = true;
-            }
+                if (!playerManager.playerLocomotion.isSprinting && rollInputTimer > 0 && rollInputTimer < 0.15f)
+                {
+                    playerManager.playerLocomotion.isSprinting = false;
+                    playerManager.playerLocomotion.isRolling = true;
+                }
 
-            if (sprintInputTimer >= 1f)
-            {
-                playerManager.animationManager.PlayTargetAnimation("Run To Stop", true, true);
+                if (sprintInputTimer >= 1f)
+                {
+                    playerManager.animationManager.PlayTargetAnimation("Run To Stop", true, true);
+                }
+                playerManager.playerLocomotion.isSprinting = false;
+                sprintInputTimer = 0f;
+                rollInputTimer = 0f;
+                spaceLetGoTimer = 0f;
             }
-            playerManager.playerLocomotion.isSprinting = false;
-            sprintInputTimer = 0f;
-            rollInputTimer = 0f;
         }
     }
 
