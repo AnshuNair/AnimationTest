@@ -70,10 +70,13 @@ public class PlayerManager : MonoBehaviour
         }
         if (characterIdleTime >= 10f)
         {
-            if (Random.Range(0, 2) == 0)
+            int fillerAnim = Random.Range(0, 3);
+            if (fillerAnim == 0)
                 animationManager.PlayTargetAnimation("Idle_filler", false);
-            else
+            else if (fillerAnim == 1)
                 animationManager.PlayTargetAnimation("Idle_filler_2", false);
+            else
+                animationManager.PlayTargetAnimation("Idle_filler_3", false);
             characterIdleTime = 0f;
         }
     }

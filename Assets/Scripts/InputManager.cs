@@ -97,7 +97,7 @@ public class InputManager : MonoBehaviour
         else if (!sprintInput && !playerManager.isInteracting)
         {
             spaceLetGoTimer += Time.deltaTime;
-            if (spaceLetGoTimer >= 0.25f)
+            if (spaceLetGoTimer >= 0.3f)
             {
                 if (!playerManager.playerLocomotion.isSprinting && rollInputTimer > 0 && rollInputTimer < 0.15f)
                 {
