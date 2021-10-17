@@ -17,6 +17,7 @@ public class InputManager : MonoBehaviour
     [HideInInspector] public float verticalInput;
     [HideInInspector] public float horizontalInput;
     [HideInInspector] public float rollInputTimer;
+    [HideInInspector] public float sprintInputTimer;
     [HideInInspector] public bool sprintInput;
     [HideInInspector] public bool walkInput;
 
@@ -42,7 +43,7 @@ public class InputManager : MonoBehaviour
     public void HandleAllInputs()
     {
         HandleMovementInput();
-        HandleRollInput();
+        HandleSprintInput();
         HandleWalkInput();
     }
 
@@ -57,25 +58,28 @@ public class InputManager : MonoBehaviour
 
     }
 
-    private void HandleRollInput()
+    private void HandleSprintInput()
     {
         sprintInput = playerControls.PlayerMovement.Sprint.phase == UnityEngine.InputSystem.InputActionPhase.Started;
 
         if (sprintInput && !playerManager.isInteracting)
         {
             rollInputTimer += Time.deltaTime;
-            if (rollInputTimer >= 0.15f && playerManager.animator.GetFloat("Vertical") >= 0.4f && !playerManager.playerLocomotion.isSprinting)
+            if (rollInputTimer >= 0.15f && playerManager.animator.GetFloat("Vertical") >= 0.4f)
             {
-                if (playerManager.animator.GetFloat("Vertical") <= 0.5f && !PlayerManager.Instance.playerLocomotion.startedSprinting)
+                if (!playerManager.playerLocomotion.isSprinting)
                 {
-                    playerManager.animationManager.PlayTargetAnimation("Idle To Sprint", false);
-                    PlayerManager.Instance.playerLocomotion.startedSprinting = true;
-                    playerManager.animator.SetFloat("Vertical", 0f);
-                    playerManager.playerLocomotion.currentSpeed = playerManager.playerLocomotion.GetSpeedFromAnimatorParameter();
+                    if (!PlayerManager.Instance.playerLocomotion.startedSprinting)
+                    {
+                        playerManager.animationManager.PlayTargetAnimation("Idle To Sprint", false);
+                        PlayerManager.Instance.playerLocomotion.startedSprinting = true;
+                        playerManager.animator.SetFloat("Vertical", 0f);
+                        playerManager.playerLocomotion.currentSpeed = playerManager.playerLocomotion.GetSpeedFromAnimatorParameter();
+                    }
                 }
-                else if (!PlayerManager.Instance.playerLocomotion.startedSprinting)
+                else
                 {
-                    playerManager.playerLocomotion.isSprinting = true;
+                    sprintInputTimer += Time.deltaTime;
                 }
             }
             else if (playerManager.animator.GetFloat("Vertical") < 0.4f)
@@ -89,8 +93,13 @@ public class InputManager : MonoBehaviour
                 playerManager.playerLocomotion.isRolling = true;
             }
 
-            rollInputTimer = 0f;
+            if (sprintInputTimer >= 1f)
+            {
+                playerManager.animationManager.PlayTargetAnimation("Run To Stop", true, true);
+            }
             playerManager.playerLocomotion.isSprinting = false;
+            sprintInputTimer = 0f;
+            rollInputTimer = 0f;
         }
     }
 

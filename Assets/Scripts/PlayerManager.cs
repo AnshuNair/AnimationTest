@@ -55,7 +55,6 @@ public class PlayerManager : MonoBehaviour
         isInteracting = animator.GetBool("isInteracting");
         animator.SetBool("isGrounded", playerLocomotion.isGrounded);
         CountIdleTime();
-        //playerLocomotion.isSprinting = inputManager.sprintInput && inputManager.moveAmount > 0f;
         playerLocomotion.isWalking = inputManager.walkInput && inputManager.moveAmount > 0f && !playerLocomotion.startedSprinting;
     }
 

@@ -93,12 +93,10 @@ public class PlayerLocomotion : MonoBehaviour
                 else
                 {
                     moveDirection *= walkingSpeed;
-                    currentSpeed = 0f;
                 }
             }
         }
-        if (playerManager.inputManager.moveAmount > 0)
-            Debug.Log(currentSpeed);
+
         Vector3 movementVelocity = moveDirection;
         playerManager.playerRigidbody.velocity = movementVelocity;
     }
