@@ -46,7 +46,8 @@ public class CameraManager : MonoBehaviour
     {
         FollowTarget();
         RotateCamera();
-        HandleCameraCollisions();
+        if (!HandleCameraCollisions())
+            cameraTransform.localPosition = new Vector3(0f, 0f, defaultPosition);
     }
 
     private void FollowTarget()
@@ -74,8 +75,9 @@ public class CameraManager : MonoBehaviour
         cameraPivot.localRotation = targetRotation;
     }
 
-    private void HandleCameraCollisions()
+    private bool HandleCameraCollisions()
     {
+        bool collided = false;
         float targetPosition = defaultPosition;
         RaycastHit hit;
         Vector3 direction = cameraTransform.position - cameraPivot.position;
@@ -84,6 +86,7 @@ public class CameraManager : MonoBehaviour
         {
             float distance = Vector3.Distance(cameraPivot.position, hit.point);
             targetPosition = -(distance - cameraCollisionOffset);
+            collided = true;
         }
 
         if (Mathf.Abs(targetPosition) < minimumCollisionOffset)
@@ -93,5 +96,7 @@ public class CameraManager : MonoBehaviour
 
         cameraVectorPosition.z = Mathf.Lerp(cameraTransform.localPosition.z, targetPosition, 0.2f);
         cameraTransform.localPosition = cameraVectorPosition;
+
+        return collided;
     }
 }

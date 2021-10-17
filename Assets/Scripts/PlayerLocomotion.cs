@@ -19,16 +19,18 @@ public class PlayerLocomotion : MonoBehaviour
 
     [Header("Movement Flags")]
     [HideInInspector] public bool isSprinting;
+    [HideInInspector] public bool startedSprinting;
+    [HideInInspector] public bool isWalking;
     [HideInInspector] public bool isRolling;
     [HideInInspector] public bool isGrounded = true;
+    [HideInInspector] public float currentSpeed;
 
-    //[Header("Movement Speeds")]
-    private float walkingSpeed = 1.5f;
+    private float walkingSpeed = 2.5f;
     private float runningSpeed = 5f;
     private float sprintingSpeed = 7f;
     private float rotationSpeed = 15f;
 
-    //[Header("Jump Speeds")]
+
     [HideInInspector] public float jumpHeight = 1f;
     [HideInInspector] public float gravityIntensity = -10f;
 
@@ -55,7 +57,7 @@ public class PlayerLocomotion : MonoBehaviour
 
         HandleMovement();
         HandleRotation();
-        //HandleRollingAndSprinting();
+        HandleRollingAndSprinting();
     }
 
     private void HandleMovement()
@@ -68,20 +70,35 @@ public class PlayerLocomotion : MonoBehaviour
         moveDirection.Normalize();
         moveDirection.y = 0;
 
-        if (isSprinting && playerManager.inputManager.moveAmount > 0.5f)
+        if (startedSprinting)
         {
-            moveDirection *= sprintingSpeed;
+            if (currentSpeed < sprintingSpeed)
+            {
+                currentSpeed = Mathf.Lerp(currentSpeed, sprintingSpeed, Time.deltaTime * 2f);
+                moveDirection *= currentSpeed;
+            }
         }
         else
         {
-            if (playerManager.inputManager.moveAmount >= 0.5f)
-                moveDirection *= runningSpeed;
+            if (isSprinting)
+            {
+                moveDirection *= sprintingSpeed;
+            }
             else
-                moveDirection *= walkingSpeed;
-
-            isSprinting = false;
+            {
+                if (!isWalking)
+                {
+                    moveDirection *= runningSpeed;
+                }
+                else
+                {
+                    moveDirection *= walkingSpeed;
+                    currentSpeed = 0f;
+                }
+            }
         }
-
+        if (playerManager.inputManager.moveAmount > 0)
+            Debug.Log(currentSpeed);
         Vector3 movementVelocity = moveDirection;
         playerManager.playerRigidbody.velocity = movementVelocity;
     }
@@ -151,5 +168,53 @@ public class PlayerLocomotion : MonoBehaviour
                 transform.position = targetPosition;
             }
         }
+    }
+
+    private void HandleRollingAndSprinting()
+    {
+        if (playerManager.isInteracting)
+            return;
+
+
+        if (isRolling)
+        {
+            moveDirection = cameraObject.forward * playerManager.inputManager.verticalInput;
+            moveDirection += cameraObject.right * playerManager.inputManager.horizontalInput;
+
+            if (playerManager.inputManager.moveAmount > 0)
+            {
+                playerManager.animationManager.PlayTargetAnimation("Rolling", true, true);
+                moveDirection.y = 0;
+                Quaternion rollRotation = Quaternion.LookRotation(moveDirection);
+                transform.rotation = rollRotation;
+                isRolling = false;
+            }
+            else
+            {
+                playerManager.animationManager.PlayTargetAnimation("Backstep", true, true);
+                isRolling = false;
+            }
+        }
+    }
+
+    public float GetSpeedFromAnimatorParameter()
+    {
+        float mySpeed = 0f;
+        float vertical = playerManager.animator.GetFloat("Vertical");
+
+        if (vertical == 0.5f)
+        {
+            mySpeed = 2.5f;
+        }
+        else if (vertical == 1f)
+        {
+            mySpeed = 5f;
+        }
+        else if (vertical == 2f)
+        {
+            mySpeed = 7f;
+        }
+
+        return mySpeed;
     }
 }

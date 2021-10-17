@@ -40,7 +40,7 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
-        inputManager.HandleMovementInput();
+        inputManager.HandleAllInputs();
     }
 
     private void FixedUpdate()
@@ -55,6 +55,8 @@ public class PlayerManager : MonoBehaviour
         isInteracting = animator.GetBool("isInteracting");
         animator.SetBool("isGrounded", playerLocomotion.isGrounded);
         CountIdleTime();
+        //playerLocomotion.isSprinting = inputManager.sprintInput && inputManager.moveAmount > 0f;
+        playerLocomotion.isWalking = inputManager.walkInput && inputManager.moveAmount > 0f && !playerLocomotion.startedSprinting;
     }
 
     private void CountIdleTime()
@@ -69,7 +71,7 @@ public class PlayerManager : MonoBehaviour
         }
         if (characterIdleTime >= 10f)
         {
-            if (Random.Range(0, 1) == 0)
+            if (Random.Range(0, 2) == 0)
                 animationManager.PlayTargetAnimation("Idle_filler", false);
             else
                 animationManager.PlayTargetAnimation("Idle_filler_2", false);
